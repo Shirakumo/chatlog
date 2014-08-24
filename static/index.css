@@ -1,0 +1,51 @@
+html{
+    background: #000;
+}
+
+body{
+    margin: 0; padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+article{
+    padding: 50px 0 50px 0;
+}
+
+article header{
+    background: #151515;
+    color: #FFF;
+    padding: 5px 0 5px 0;
+    border-bottom: 3px solid #0088EE;
+    text-align: justify;
+    position: relative;
+    z-index: 2;
+}
+
+article header>div{
+    margin: 0 auto 0 auto;
+    max-width: 700px;
+}
+
+article header h1{
+    display: block;
+    vertical-align: middle;
+    margin: 0; padding: 0;
+    font-size: 24pt;
+    text-align: left;
+}
+
+#generic-body{
+    max-width: 800px;
+    margin: 0 auto 0 auto;
+    background: #EEE;
+    padding: 5px 20px 10px 20px;
+    box-sizing: border-box;
+    text-align: justify;
+    border: 1px solid #0088EE;
+    border-top: none;
+    border-bottom: none;
+    font-family: Georgia,Serif;
+    font-size: 12pt;
+    line-height: 120%;
+    position: relative;
+}

@@ -24,11 +24,11 @@
               <th>Message</th>
             </tr>
           </thead>
-          <tbody iterate=":messages" class="article-listing">
+          <tbody iterate=":messages">
             <tr>
-              <td lquery="(text (chatlog::format-time time))"></td>
-              <td lquery="(text nick)"></td>
-              <td lquery="(text message)"></td>
+              <td lquery="(text (chatlog::format-time &quot;time&quot;))"></td>
+              <td lquery="(text &quot;nick&quot;)"></td>
+              <td lquery="(text &quot;message&quot;)"></td>
             </tr>
           </tbody>
         </table>
