@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>TyNET IRC Chatlog</title>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="TyNET IRC Chatlog" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" type="text/css" href="/static/chatlog/index.css" />
+  </head>
+  <body>
+    <article>
+      <header>
+        <div>
+          <h1>TyNET IRC Chatlog</h1>
+        </div>
+      </header>
+      <section id="generic-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Nick</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody iterate=":messages" class="article-listing">
+            <tr>
+              <td lquery="(text (chatlog::format-time time))"></td>
+              <td lquery="(text nick)"></td>
+              <td lquery="(text message)"></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+  </body>
+</html>
