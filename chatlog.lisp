@@ -18,6 +18,9 @@
        :format '((:hour 2) #\: (:min 2) #\: (:sec 2)))
       ""))
 
+(defun format-text (text)
+  (string-trim '(#\Newline #\Return #\Space #\Linefeed #\Tab) text))
+
 (defun compute-where (types user)
   (let ((types (loop for char across (or types "") collect (string char))))
     (values
@@ -60,4 +63,4 @@
   (api-output (fetch server channel types from to user amount order)))
 
 (define-page view #@"log.irc/^$" (:lquery (template "index.html"))
-  (r-clip:process (lquery:$ (node)) :messages (fetch "TYNET" "Stevenchan" NIL NIL NIL NIL NIL "ASC")))
+  (r-clip:process (lquery:$ (node)) :messages (fetch "FREENODE" "lisp" NIL NIL NIL NIL NIL "ASC")))
