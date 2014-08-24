@@ -5,7 +5,8 @@
 |#
 
 (defpackage #:org.tymoonnext.chatlog.asdf
-  (:use #:cl #:asdf))(in-package #:org.tymoonnext.chatlog.asdf)
+  (:use #:cl #:asdf))
+(in-package #:org.tymoonnext.chatlog.asdf)
 
 (defsystem chatlog
   :defsystem-depends-on (:radiance)
@@ -15,7 +16,7 @@
   :license "Artistic"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
-  :description ""Frontend for Colleen's chatlog-pg module.""
+  :description "Frontend for Colleen's chatlog-pg module."
   :serial T
   :components ((:file "chatlog"))
   :depends-on (:postmodern :local-time))
