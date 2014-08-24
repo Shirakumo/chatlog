@@ -8,7 +8,7 @@ body{
 }
 
 article{
-    padding: 50px 0 50px 0;
+    padding: 0;
 }
 
 article header{
@@ -35,17 +35,64 @@ article header h1{
 }
 
 #generic-body{
-    max-width: 800px;
-    margin: 0 auto 0 auto;
     background: #EEE;
-    padding: 5px 20px 10px 20px;
+    padding: 0;
     box-sizing: border-box;
     text-align: justify;
     border: 1px solid #0088EE;
     border-top: none;
     border-bottom: none;
-    font-family: Georgia,Serif;
     font-size: 12pt;
     line-height: 120%;
     position: relative;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+    table-layout:fixed;
+    font-family: Consolas, Inconsolata, monospace;
+}
+
+table tr td:nth-child(1),table tr th:nth-child(1){
+    width:80px;
+    white-space:nowrap;
+    vertical-align: text-top;
+}
+
+table tr td:nth-child(2), table tr th:nth-child(2){
+    width: 100px;
+    white-space: nowrap;
+}
+
+table tr td:nth-child(2){ 
+    text-align: right;
+    vertical-align: text-top;
+    color: blue;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+table tr td:nth-child(2):before{
+    content: "<";
+    color: #000;
+}
+
+table tr td:nth-child(2):after{
+    content: ">";
+    color: #000;
+}
+
+table tr td:nth-child(3){
+    text-indent: 5px;
+}
+
+table tr:nth-child(2n){
+    background: rgba(0,0,0,0.1);
+}
+
+table thead tr{
+    background: #0088EE;
+    color: #FFF;
+    text-indent: 10px;
 }
