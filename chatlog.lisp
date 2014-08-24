@@ -11,6 +11,13 @@
   (:export))
 (in-package #:org.tymoonnext.chatlog)
 
+(defmacro with-connection (() &body body)
+  `(postmodern:with-connection (list (or (uc:config-tree :chatlog :database) "irc")
+                                     (or (uc:config-tree :chatlog :user) "irc")
+                                     (or (uc:config-tree :chatlog :pass) (error 'radiance-error :message "Configuration error."))
+                                     (or (uc:config-tree :chatlog :host) "localhost"))
+     ,@body))
+
 (defun format-time (unix)
   (if unix
       (local-time:format-timestring
@@ -19,7 +26,7 @@
       ""))
 
 (defun format-text (text)
-  (string-trim '(#\Newline #\Return #\Space #\Linefeed #\Tab) text))
+  (string-trim '(#\Newline #\Return #\Space #\Linefeed #\Tab #\Soh) text))
 
 (defun compute-where (types user)
   (let ((types (loop for char across (or types "") collect (string char))))
@@ -40,13 +47,11 @@
         (to (or (parse-integer (or to "") :junk-allowed T) (get-unix-time)))
         (amount (or (parse-integer (or amount "") :junk-allowed T) 500))
         (channel (format NIL "#~a" channel)))
+    (when (< 10000 amount)
+      (error 'api-argument-invalid :argument "amount" :message "Amount cannot be higher than 10000."))
     (multiple-value-bind (where args) (compute-where types user)
-      (let ((database (or (uc:config-tree :chatlog :database) "irc"))
-            (user (or (uc:config-tree :chatlog :user) "irc"))
-            (pass (or (uc:config-tree :chatlog :pass) (error 'radiance-error :message "Configuration error.")))
-            (host (or (uc:config-tree :chatlog :host) "localhost"))
-            (table (or (uc:config-tree :chatlog :table) "chatlog")))
-        (postmodern:with-connection (list database user pass host)
+      (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
+        (with-connection ()
           (cl-postgres:prepare-query
            postmodern:*database* ""
            (format NIL "SELECT * FROM \"~a\" WHERE (\"server\"=$1 AND \"channel\"=$2 AND \"time\">=$3 AND \"time\"<=$4 ~a) ORDER BY \"time\" ~a LIMIT $5" table where order))
@@ -59,8 +64,18 @@
                                    do (setf (gethash (cl-postgres:field-name field) table)
                                             (cl-postgres:next-field field))) table)))))))))
 
+(defun channels ()
+  (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
+    (with-connection ()
+      (postmodern:query (format NIL "SELECT \"channel\",\"server\" FROM \"~a\" GROUP BY \"channel\",\"server\"" table)))))
+
 (define-api chatlog/get (server channel &optional types from to user (amount "500") (order "DESC")) ()
   (api-output (fetch server channel types from to user amount order)))
 
-(define-page view #@"log.irc/^$" (:lquery (template "index.html"))
-  (r-clip:process (lquery:$ (node)) :messages (fetch "FREENODE" "lisp" NIL NIL NIL NIL NIL "ASC")))
+(define-api chatlog/channels () ()
+  (api-output (channels)))
+
+(define-page view #@"log.irc/^(([a-zA-Z]+)/([a-zA-Z]+)(/([^.]*))?)?$" (:uri-groups (NIL server channel NIL user) :lquery (template "index.html"))
+  (r-clip:process
+   (lquery:$ (node))
+   :messages (fetch (or server "TYNET") (or channel "Stevenchan") (get-var "types") (get-var "from") (get-var "to") user "10000" "ASC")))
