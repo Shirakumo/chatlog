@@ -90,7 +90,7 @@
 (defun channels ()
   (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
     (with-connection ()
-      (postmodern:query (format NIL "SELECT \"channel\",\"server\" FROM \"~a\" GROUP BY \"channel\",\"server\"" table)))))
+      (postmodern:query (format NIL "SELECT \"server\",\"channel\" FROM \"~a\" GROUP BY \"channel\",\"server\"" table)))))
 
 (define-api chatlog/get (server channel &optional types from to user (amount "500") (order "DESC")) ()
   (api-output (fetch server channel types from to user amount order)))

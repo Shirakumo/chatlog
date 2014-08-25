@@ -49,6 +49,11 @@ article header h1{
     position: relative;
 }
 
+#channel-list{
+    list-style: none;
+    font-size: 18pt;
+}
+
 #table-body{
     background: #EEE;
     padding: 0;
