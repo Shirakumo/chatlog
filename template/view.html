@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>TyNET IRC Chatlog</title>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="TyNET IRC Chatlog" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" type="text/css" href="/static/chatlog/index.css" />
+  </head>
+  <body>
+    <article>
+      <header>
+        <div>
+          <h1>TyNET IRC Chatlog</h1>
+        </div>
+      </header>
+      <section id="table-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Nick</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody iterate=":messages">
+            <tr>
+              <td>
+                <using field="(clipboard &quot;time&quot;)">
+                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name (princ-to-string *) :href (chatlog::time-link *) :title (chatlog::title-time *))"></a>
+                </using>
+              </td>
+              <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>
+              <td lquery="(text (chatlog::format-text (clipboard &quot;message&quot;)))"></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="/static/chatlog/index.js" />
+  </body>
+</html>

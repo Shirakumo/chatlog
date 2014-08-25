@@ -16,29 +16,12 @@
         </div>
       </header>
       <section id="generic-body">
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Nick</th>
-              <th>Message</th>
-            </tr>
-          </thead>
-          <tbody iterate=":messages">
-            <tr>
-              <td>
-                <using field="(clipboard &quot;time&quot;)">
-                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name (princ-to-string *) :href (chatlog::time-link *) :title (chatlog::title-time *))"></a>
-                </using>
-              </td>
-              <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>
-              <td lquery="(text (chatlog::format-text (clipboard &quot;message&quot;)))"></td>
-            </tr>
-          </tbody>
-        </table>
+        <ul iterate=":channels">
+          <li>
+            <a href="#" lquery="(text * (attr :href *))"></a>
+          </li>
+        </ul>
       </section>
     </article>
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="/static/chatlog/index.js" />
   </body>
 </html>

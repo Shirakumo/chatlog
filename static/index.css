@@ -35,6 +35,21 @@ article header h1{
 }
 
 #generic-body{
+    max-width: 800px;
+    margin: 0 auto 0 auto;
+    background: #EEE;
+    padding: 20px 10px 20px 10px;
+    box-sizing: border-box;
+    text-align: justify;
+    border: 1px solid #0088EE;
+    border-top: none;
+    border-bottom: none;
+    font-size: 12pt;
+    line-height: 120%;
+    position: relative;
+}
+
+#table-body{
     background: #EEE;
     padding: 0;
     box-sizing: border-box;
