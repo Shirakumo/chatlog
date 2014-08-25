@@ -19,4 +19,4 @@
   :description "Frontend for Colleen's chatlog-pg module."
   :serial T
   :components ((:file "chatlog"))
-  :depends-on (:postmodern :local-time))
+  :depends-on (:r-clip :postmodern :local-time))
