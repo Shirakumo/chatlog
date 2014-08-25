@@ -68,7 +68,7 @@ table tr td:nth-child(2), table tr th:nth-child(2){
 table tr td:nth-child(2){ 
     text-align: right;
     vertical-align: text-top;
-    color: blue;
+    color: darkred;
     overflow: hidden;
     text-overflow: ellipsis;
 }

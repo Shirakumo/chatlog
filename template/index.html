@@ -26,7 +26,11 @@
           </thead>
           <tbody iterate=":messages">
             <tr>
-              <td lquery="(text (chatlog::format-time (clipboard &quot;time&quot;)))"></td>
+              <td>
+                <using field="(clipboard &quot;time&quot;)">
+                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name (princ-to-string *) :href (chatlog::time-link *) :title (chatlog::title-time *))"></a>
+                </using>
+              </td>
               <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>
               <td lquery="(text (chatlog::format-text (clipboard &quot;message&quot;)))"></td>
             </tr>
@@ -34,5 +38,7 @@
         </table>
       </section>
     </article>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="/static/chatlog/index.js" />
   </body>
 </html>
