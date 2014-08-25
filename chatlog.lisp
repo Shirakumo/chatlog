@@ -78,4 +78,6 @@
 (define-page view #@"log.irc/^(([a-zA-Z]+)/([a-zA-Z]+)(/([^.]*))?)?$" (:uri-groups (NIL server channel NIL user) :lquery (template "index.html"))
   (r-clip:process
    (lquery:$ (node))
-   :messages (fetch (or server "TYNET") (or channel "Stevenchan") (get-var "types") (get-var "from") (get-var "to") user "10000" "ASC")))
+   :messages (fetch (or server (uc:config-tree :chatlog :default-server) (error 'radiance-error :message "Configuration error."))
+                    (or channel (uc:config-tree :chatlog :default-channel) (error 'radiance-error :message "Configuration error."))
+                    (get-var "types") (get-var "from") (get-var "to") user "10000" "ASC")))
