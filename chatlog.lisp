@@ -98,7 +98,7 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view #@"log.irc/^([a-zA-Z]+)/([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL user) :lquery (template "view.html"))
+(define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL user) :lquery (template "view.html"))
   (let ((types (or (get-var "types") NIL))
         (from (or (get-var "from") NIL))
         (to (or (get-var "to") NIL))
@@ -117,4 +117,5 @@
 (define-page index #@"log.irc/^$" (:lquery (template "index.html"))
   (r-clip:process
    (lquery:$ (node))
-   :channels (mapcar #'(lambda (entry) (format NIL "/~a/~a" (first entry) (second entry))) (channels))))
+   :channels (sort (mapcar #'(lambda (entry) (format NIL "/~a/~a" (first entry) (subseq (second entry) 1))) (channels))
+                   #'string<)))

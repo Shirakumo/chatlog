@@ -38,7 +38,7 @@ article header h1{
     max-width: 800px;
     margin: 0 auto 0 auto;
     background: #EEE;
-    padding: 20px 10px 20px 10px;
+    padding: 10px 20px 10px 20px;
     box-sizing: border-box;
     text-align: justify;
     border: 1px solid #0088EE;
@@ -52,6 +52,10 @@ article header h1{
 #channel-list{
     list-style: none;
     font-size: 18pt;
+}
+
+#channel-list{
+    padding: 5px;
 }
 
 #table-body{
