@@ -99,6 +99,7 @@
   (api-output (channels)))
 
 (define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL user) :lquery (template "view.html"))
+  (setf (content-type *response*) "text/html")
   (let ((types (or (get-var "types") NIL))
         (from (or (get-var "from") NIL))
         (to (or (get-var "to") NIL))
@@ -115,6 +116,7 @@
                       types from to user 10000 "ASC"))))
 
 (define-page index #@"log.irc/^$" (:lquery (template "index.html"))
+  (setf (content-type *response*) "text/html")
   (r-clip:process
    (lquery:$ (node))
    :channels (sort (mapcar #'(lambda (entry) (format NIL "/~a/~a" (first entry) (subseq (second entry) 1))) (channels))
