@@ -98,7 +98,7 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL user) :lquery (template "view.html"))
+(define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL user) :lquery (template "view.ctml"))
   (setf (content-type *response*) "text/html")
   (let ((types (or (get-var "types") NIL))
         (from (or (get-var "from") NIL))
@@ -115,7 +115,7 @@
                       (or channel (uc:config-tree :chatlog :default-channel) (error 'radiance-error :message "Configuration error."))
                       types from to user 10000 "ASC"))))
 
-(define-page index #@"log.irc/^$" (:lquery (template "index.html"))
+(define-page index #@"log.irc/^$" (:lquery (template "index.ctml"))
   (setf (content-type *response*) "text/html")
   (r-clip:process
    (lquery:$ (node))

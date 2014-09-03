@@ -24,12 +24,12 @@
               <th>Message</th>
             </tr>
           </thead>
-          <tbody iterate=":messages">
+          <tbody iterate="messages">
             <tr>
               <td>
-                <using field="(clipboard &quot;time&quot;)">
-                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name (princ-to-string *) :href (chatlog::time-link *) :title (chatlog::title-time *))"></a>
-                </using>
+                <c:using value="(clipboard &quot;time&quot;)">
+                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name *) :href (chatlog::time-link *) :title (chatlog::title-time *))"></a>
+                </c:using>
               </td>
               <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>
               <td lquery="(text (chatlog::format-text (clipboard &quot;message&quot;)))"></td>
