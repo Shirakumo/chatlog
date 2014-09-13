@@ -104,6 +104,12 @@
         (from (or (get-var "from") NIL))
         (to (or (get-var "to") NIL))
         (around (get-var "around")))
+    (when from
+      (ignore-errors
+       (setf from (local-time:timestamp-to-unix (local-time:parse-timestring from :allow-missing-elements T)))))
+    (when to
+      (ignore-errors
+       (setf to (local-time:timestamp-to-unix (local-time:parse-timestring to :allow-missing-elements T)))))
     (when around
       (ignore-errors
        (setf around (local-time:timestamp-to-unix (local-time:parse-timestring around :allow-missing-elements T)))
