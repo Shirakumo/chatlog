@@ -11,12 +11,18 @@
   (:export))
 (in-package #:org.tymoonnext.chatlog)
 
+(defvar *default-types* "mnaot")
+
 (defmacro with-connection (() &body body)
   `(postmodern:with-connection (list (or (uc:config-tree :chatlog :database) "irc")
                                      (or (uc:config-tree :chatlog :user) "irc")
                                      (or (uc:config-tree :chatlog :pass) (error 'radiance-error :message "Configuration error."))
                                      (or (uc:config-tree :chatlog :host) "localhost"))
      ,@body))
+
+(defun get-unix-time ()
+  (local-time:timestamp-to-unix
+   (local-time:now)))
 
 (defun format-time (unix)
   (if unix
@@ -35,8 +41,8 @@
 (defun format-text (text)
   (string-trim '(#\Newline #\Return #\Space #\Linefeed #\Tab #\Soh) text))
 
-(defun time-link (unix)
-  (format NIL "/~a?around=~a#~a" (path *request*) (format-long-time unix) unix))
+(defun time-link (unix &optional (types *default-types*))
+  (format NIL "/~a?around=~a~@[&types=~a~]#~a" (path *request*) (format-long-time unix) types unix))
 
 (defun title-time (unix)
   (if unix
@@ -55,6 +61,15 @@
      (if user
          (cons user types)
          types))))
+
+(defun maybe-parse-timestamp (thing)
+  (typecase thing
+    (string
+     (ignore-errors
+      (local-time:timestamp-to-unix
+       (local-time:parse-timestring thing :allow-missing-elements T))))
+    (number thing)
+    (null thing)))
 
 (defun parse-i (thing)
   (typecase thing
@@ -100,26 +115,27 @@
 
 (define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL user) :lquery (template "view.ctml"))
   (setf (content-type *response*) "text/html")
-  (let ((types (or (get-var "types") NIL))
-        (from (or (get-var "from") NIL))
-        (to (or (get-var "to") NIL))
-        (around (get-var "around")))
-    (when from
-      (ignore-errors
-       (setf from (local-time:timestamp-to-unix (local-time:parse-timestring from :allow-missing-elements T)))))
-    (when to
-      (ignore-errors
-       (setf to (local-time:timestamp-to-unix (local-time:parse-timestring to :allow-missing-elements T)))))
+  (let* ((type (or (get-var "type[]") NIL))
+	 (types (or* (get-var "types") (format NIL "~{~a~}" type) *default-types*))
+	 (from (or* (get-var "from") (- (get-unix-time) (* 60 60 12))))
+	 (to (or* (get-var "to") (+ (get-unix-time) 60)))
+	 (around (or* (get-var "around") NIL))
+	 (user (or* user (get-var "user") NIL)))
     (when around
       (ignore-errors
        (setf around (local-time:timestamp-to-unix (local-time:parse-timestring around :allow-missing-elements T)))
        (setf from (- around (* 60 60 6)))
        (setf to (+ around (* 60 60 6)))))
+    (setf from (maybe-parse-timestamp from))
+    (setf to (maybe-parse-timestamp to))
     (r-clip:process
      (lquery:$ (node))
      :messages (fetch (or server (uc:config-tree :chatlog :default-server) (error 'radiance-error :message "Configuration error."))
                       (or channel (uc:config-tree :chatlog :default-channel) (error 'radiance-error :message "Configuration error."))
-                      types from to user 10000 "ASC"))))
+                      types from to user 10000 "ASC")
+     :from from
+     :to to
+     :types types)))
 
 (define-page index #@"log.irc/^$" (:lquery (template "index.ctml"))
   (setf (content-type *response*) "text/html")

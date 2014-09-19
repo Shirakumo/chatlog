@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>TyNET IRC Chatlog</title>
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, user-scalable=yes" />
     <meta name="description" content="TyNET IRC Chatlog" />
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" type="text/css" href="/static/chatlog/index.css" />
@@ -15,7 +15,39 @@
           <h1>TyNET IRC Chatlog</h1>
         </div>
       </header>
-      <section id="table-body">
+      <form id="nav" method="get">
+	Filter
+	<span id="time-bar">
+	  <input type="datetime" name="from" title="Lower Time Limit (ie 2014-01-01T00:00:00)" placeholder="2014-01-01T00:00:00"
+		 lquery="(val (chatlog::format-long-time from))" />
+	  -
+	  <input type="datetime" name="to" title="Upper Time Limit (ie 2014-01-01T12:00:00)" placeholder="2014-01-01T12:00:00"
+		 lquery="(val (chatlog::format-long-time to))" />
+	</span>
+	by
+	<span id="type-bar">
+	  <input type="checkbox" name="type[]" value="m" title="Messages"
+		 lquery="(attr :checked (find #\m types))" />
+	  <input type="checkbox" name="type[]" value="a" title="Actions"
+		 lquery="(attr :checked (find #\a types))" />
+	  <input type="checkbox" name="type[]" value="n" title="Nick Changes"
+		 lquery="(attr :checked (find #\n types))" />
+	  <input type="checkbox" name="type[]" value="j" title="Joins"
+		 lquery="(attr :checked (find #\j types))" />
+	  <input type="checkbox" name="type[]" value="q" title="Quits"
+		 lquery="(attr :checked (find #\q types))" />
+	  <input type="checkbox" name="type[]" value="p" title="Partings"
+		 lquery="(attr :checked (find #\p types))" />
+	  <input type="checkbox" name="type[]" value="k" title="Kicks"
+		 lquery="(attr :checked (find #\l types))" />
+	  <input type="checkbox" name="type[]" value="o" title="Mode Changes"
+		 lquery="(attr :checked (find #\o types))" />
+	  <input type="checkbox" name="type[]" value="t" title="Topic Changes"
+		 lquery="(attr :checked (find #\t types))" />
+	</span>
+	<input type="submit" value="Filter" />
+      </form>
+      <div id="table-body">
         <table>
           <thead>
             <tr>
@@ -28,7 +60,7 @@
             <tr>
               <td>
                 <c:using value="(clipboard &quot;time&quot;)">
-                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name * :href (chatlog::time-link *) :title (chatlog::title-time *))"></a>
+                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name * :href (chatlog::time-link * (*** :types)) :title (chatlog::title-time *))"></a>
                 </c:using>
               </td>
               <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>
@@ -36,9 +68,9 @@
             </tr>
           </tbody>
         </table>
-      </section>
+      </div>
     </article>
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="/static/chatlog/index.js" />
+    <script type="text/javascript" src="/static/chatlog/index.js"></script>
   </body>
 </html>

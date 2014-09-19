@@ -34,6 +34,19 @@ article header h1{
     text-align: left;
 }
 
+article #nav{
+    background: #0088EE;
+    color: #FFF;
+    padding: 2px 10px 2px 10px;
+}
+
+article #nav input{
+    border: 1px solid #0055AA;
+    background: #EEE;
+    color: #000;
+    vertical-align: middle;
+}
+
 #generic-body{
     max-width: 800px;
     margin: 0 auto 0 auto;
@@ -121,4 +134,45 @@ table thead tr{
     background: #0088EE;
     color: #FFF;
     text-indent: 10px;
+}
+
+
+@media (max-width:680px){
+    article header{
+	display: none;
+    }
+    
+    article #nav{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	font-size: 0pt;
+    }
+
+    article #nav *{
+	font-size: 10pt;
+    }
+
+    article #nav #time-bar{
+	flex-grow: 1;
+	display: flex;
+	justify-content: space-between;
+    }
+
+    article #nav #time-bar *{
+	flex-grow: 1;
+    }
+    
+    #table-body{
+	font-size: 10pt;
+	border: none;
+    }
+    
+    table tr th:first-child, table tr td:first-child{
+	display: none
+    }
+
+    table tr td:nth-child(2), table tr th:nth-child(2){
+	width: 70px;
+    }
 }
