@@ -42,7 +42,7 @@
   (string-trim '(#\Newline #\Return #\Space #\Linefeed #\Tab #\Soh) text))
 
 (defun time-link (unix &optional (types *default-types*))
-  (format NIL "/~a?around=~a~@[&types=~a~]#~a" (path *request*) (format-long-time unix) types unix))
+  (format NIL "/~a?around=~a~@[&types=~a~]#~a" (path (uri *request*)) (format-long-time unix) types unix))
 
 (defun title-time (unix)
   (if unix
