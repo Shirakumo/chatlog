@@ -28,14 +28,16 @@
   (if unix
       (local-time:format-timestring
        NIL (local-time:unix-to-timestamp unix)
-       :format '((:hour 2) #\: (:min 2) #\: (:sec 2)))
+       :format '((:hour 2) #\: (:min 2) #\: (:sec 2))
+       :timezone local-time:+utc-zone+)
       ""))
 
 (defun format-long-time (unix)
   (if unix
       (local-time:format-timestring
        NIL (local-time:unix-to-timestamp unix)
-       :format '((:year 4) #\- (:month 2) #\- (:day 2) #\T (:hour 2) #\: (:min 2) #\: (:sec 2)))
+       :format '((:year 4) #\- (:month 2) #\- (:day 2) #\T (:hour 2) #\: (:min 2) #\: (:sec 2))
+       :timezone local-time:+utc-zone+)
       ""))
 
 (defun format-text (text)
@@ -48,7 +50,8 @@
   (if unix
       (local-time:format-timestring
        NIL (local-time:unix-to-timestamp unix)
-       :format '("Link to " :long-weekday ", " :ordinal-day " of " :long-month " " (:year 4) " " (:hour 2) #\: (:min 2) #\: (:sec 2)))
+       :format '("Link to " :long-weekday ", " :ordinal-day " of " :long-month " " (:year 4) " " (:hour 2) #\: (:min 2) #\: (:sec 2))
+       :timezone local-time:+utc-zone+)
       ""))
 
 (defun compute-where (types)
