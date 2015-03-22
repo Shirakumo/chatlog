@@ -30,7 +30,7 @@ $(function(){
     // Clickable URLs
     $("tr td:nth-child(3)").each(function(){
         var text = $(this).text();
-        var urlregex = /http:\/\/([A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]*)/g;
+        var urlregex = /([a-zA-Z]):\/\/([A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]*)/g;
         var previndex = 0;
         $(this).empty();
         while((match = urlregex.exec(text)) != null){
