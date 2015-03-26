@@ -28,6 +28,12 @@ $(function(){
     });
 
     // Clickable URLs
+    jQuery.fn.appendText = function(text){
+        $(this).each(function(){
+            $(this).text($(this).text()+text);
+        });
+    };
+    
     $("tr td:nth-child(3)").each(function(){
         var text = $(this).text();
         var urlregex = /([a-zA-Z]+):\/\/([A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]*)/g;
@@ -38,10 +44,10 @@ $(function(){
             var url = $("<a>")
                 .text(match[0])
                 .attr("href", match[0]);
-            $(this).append(before)
+            $(this).appendText(before)
                 .append(url);
             previndex = match.index+match[0].length;
         }
-        $(this).append(text.substring(previndex));
+        $(this).appendText(text.substring(previndex));
     });
 });
