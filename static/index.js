@@ -30,7 +30,7 @@ $(function(){
     // Clickable URLs
     jQuery.fn.appendText = function(text){
         $(this).each(function(){
-            $(this).text($(this).text()+text);
+            $(this).append(document.createTextNode(text));
         });
     };
     
