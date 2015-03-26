@@ -32,6 +32,7 @@ $(function(){
         $(this).each(function(){
             $(this).append(document.createTextNode(text));
         });
+        return this;
     };
     
     $("tr td:nth-child(3)").each(function(){
