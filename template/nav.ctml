@@ -1,5 +1,5 @@
 <form class="nav" method="get">
-  <a href="#" title="Go backward by a day." lquery="(attr :href (chatlog::time-link (- from 86400) types :from))" class="backward">
+  <a href="#" title="Go backward by a day. Simply press the 'A' key." lquery="(attr :href (chatlog::time-link (- from 86400) types :from))" class="backward">
     <i class="fa fa-backward fa-fw"></i>
   </a>
   <span>
@@ -46,7 +46,7 @@
     <input type="submit" value="Filter" />
     <span class="spring"/>
   </span>
-  <a href="#" title="Go forward by a day." lquery="(attr :href (chatlog::time-link (+ from 86400) types :from))" class="forward">
+  <a href="#" title="Go forward by a day. Simply press the 'D' key." lquery="(attr :href (chatlog::time-link (+ from 86400) types :from))" class="forward">
     <i class="fa fa-forward fa-fw"></i>
   </a>
 </form>
