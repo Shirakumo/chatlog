@@ -4,7 +4,7 @@ html{
 
 body{
     margin: 0; padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: sans-serif;
 }
 
 article{
@@ -15,7 +15,6 @@ article header{
     background: #151515;
     color: #FFF;
     padding: 5px 0 5px 0;
-    border-bottom: 3px solid #0088EE;
     text-align: justify;
     position: relative;
     z-index: 2;
@@ -23,7 +22,7 @@ article header{
 
 article header>div{
     margin: 0 auto 0 auto;
-    max-width: 700px;
+    padding: 0 5px 0 5px;
 }
 
 article header h1{
@@ -34,17 +33,81 @@ article header h1{
     text-align: left;
 }
 
-article #nav{
-    background: #0088EE;
+article .nav{
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    align-content: center;
+    background: #3344AA;
     color: #FFF;
     padding: 2px 10px 2px 10px;
 }
 
-article #nav input{
-    border: 1px solid #0055AA;
+article .nav>a{
+    margin: 0 5px 0 5px;
+    color: white;
+}
+
+article .nav>span{
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: space-around;
+}
+
+article .nav a:hover{
+    color: #88EEFF;
+}
+
+article .nav .spring{
+    flex-grow: 1;
+}
+
+article .nav input{
+    border: none;
     background: #EEE;
     color: #000;
-    vertical-align: middle;
+    font-size: 11pt;
+    margin: 0 2px 0 2px;
+}
+
+article .nav input[type="datetime"]{
+    font-family: monospace;
+}
+
+article .nav .checkbox{
+    position: relative;
+    margin: 0 2px 0 2px;
+}
+
+article .nav .checkbox label{
+    cursor: pointer;
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    top: 0;
+    left: 0;
+    background: #eee;
+    border: 1px solid #ddd;
+}
+
+article .nav .checkbox label:after {
+    opacity: 0;
+    content: '';
+    position: absolute;
+    width: 11px; height: 11px;
+    top: 2px; left: 2px;
+    background: #0088EE;
+    transition: 0.5s;
+}
+
+article .nav .checkbox label:hover::after {
+    opacity: 0.3;
+}
+
+article .nav .checkbox input[type=checkbox]:checked + label:after {
+    opacity: 1;
 }
 
 #generic-body{
@@ -90,13 +153,22 @@ table{
     width: 100%;
     border-collapse: collapse;
     table-layout:fixed;
-    font-family: Consolas, Inconsolata, monospace;
+    font-family: monospace;
 }
 
 table tr td:nth-child(1),table tr th:nth-child(1){
     width:80px;
     white-space:nowrap;
     vertical-align: text-top;
+    text-align: center;
+}
+
+table tr td:nth-child(1) a{
+    text-decoration: none;
+}
+
+table tr td:nth-child(1) a:hover{
+    color: #0088EE;
 }
 
 table tr td:nth-child(2), table tr th:nth-child(2){
@@ -142,25 +214,12 @@ table thead tr{
 	display: none;
     }
     
-    article #nav{
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	font-size: 0pt;
+    article .nav{
+	font-size: 14pt;
     }
 
-    article #nav *{
+    article .nav span *{
 	font-size: 10pt;
-    }
-
-    article #nav #time-bar{
-	flex-grow: 1;
-	display: flex;
-	justify-content: space-between;
-    }
-
-    article #nav #time-bar *{
-	flex-grow: 1;
     }
     
     #table-body{

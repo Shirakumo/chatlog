@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content="TyNET IRC Chatlog" />
     <meta name="robots" content="index, follow" />
-    <link rel="stylesheet" type="text/css" href="/static/chatlog/index.css" />
+    <link rel="stylesheet" type="text/css" @href="/static/chatlog/index.css" />
   </head>
   <body>
     <article>

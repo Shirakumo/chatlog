@@ -51,4 +51,16 @@ $(function(){
         }
         $(this).appendText(text.substring(previndex));
     });
+
+    // Shortcuts
+    $(window).keyup(function(e){
+        switch(e.which){
+        case 65:
+            window.location.href = $(".backward").attr("href");
+            break;
+        case 68:
+            window.location.href = $(".forward").attr("href");
+            break;
+        }
+    });
 });

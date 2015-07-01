@@ -41,10 +41,11 @@
       ""))
 
 (defun format-text (text)
-  (string-trim '(#\Newline #\Return #\Space #\Linefeed #\Tab #\Soh) text))
+  ;; Strip XML invalid characters... *sigh*.
+  (cl-ppcre:regex-replace-all "[^	\\x0A -퟿-�𐀀-􏿿]+" text ""))
 
-(defun time-link (unix &optional (types *default-types*))
-  (format NIL "/~a?around=~a~@[&types=~a~]#~a" (path (uri *request*)) (format-long-time unix) types unix))
+(defun time-link (unix &optional (types *default-types*) (keyword :around))
+  (format NIL "/~a?~(~a~)=~a~@[&types=~a~]#~a" (path (uri *request*)) keyword (format-long-time unix) types unix))
 
 (defun title-time (unix)
   (if unix
@@ -53,6 +54,11 @@
        :format '("Link to " :long-weekday ", " :ordinal-day " of " :long-month " " (:year 4) " " (:hour 2) #\: (:min 2) #\: (:sec 2))
        :timezone local-time:+utc-zone+)
       ""))
+
+(lquery:define-lquery-function chatlog-template (node object)
+  (setf (plump:children node) (plump:make-child-array))
+  (plump:parse (template (format NIL "~(~a~).ctml" object)) :root node)
+  node)
 
 (defun compute-where (types)
   (let ((types (loop for char across (or types "") collect (string char))))
@@ -79,10 +85,45 @@
     (string (parse-integer thing :junk-allowed T))
     (null NIL)))
 
+;; Make sure these keywords are known.
 :SERVER :CHANNEL :NICK :TIME :TYPE :MESSAGE
-(defun fetch (server channel types from to amount order)
-  (unless (or (string= order "ASC") (string= order "DESC"))
-    (error 'api-argument-invalid :argument "order" :message "Order must be either DESC or ASC."))
+
+(defmacro string-formatter (format-string)
+  (let ((args (gensym "ARGS"))
+        (stream (gensym "STREAM")))
+    `(lambda (&rest ,args)
+       (with-output-to-string (,stream)
+         (apply (formatter ,format-string) ,stream ,args)))))
+
+(defparameter *select-messages*
+  (string-formatter
+   "SELECT * ~
+    FROM \"~a\" ~
+    WHERE (\"server\"=$1 ~
+       AND \"channel\"=$2 ~
+       AND \"time\">=$3 ~
+       AND \"time\"<=$4 ~a) ~
+    ORDER BY \"time\" ASC, \"id\" ASC ~
+    LIMIT $5"))
+
+(defparameter *select-channels*
+  (string-formatter
+   "SELECT \"server\",\"channel\" ~
+    FROM \"~a\" ~
+    GROUP BY \"channel\",\"server\""))
+
+(defun query (query &rest parameters)
+  (cl-postgres:prepare-query postmodern:*database* "" query)
+  (cl-postgres:exec-prepared
+   postmodern:*database* "" parameters
+   (cl-postgres:row-reader (fields)
+     (loop while (cl-postgres:next-row)
+           collect (let ((table (make-hash-table :test 'equalp)))
+                     (loop for field across fields
+                           do (setf (gethash (cl-postgres:field-name field) table)
+                                    (cl-postgres:next-field field))) table)))))
+
+(defun fetch (server channel types from to amount)
   (let ((from (or (parse-i from) (- (get-unix-time) (* 60 60 12))))
         (to (or (parse-i to) (get-unix-time)))
         (amount (or (parse-i amount) 500))
@@ -92,23 +133,11 @@
     (multiple-value-bind (where args) (compute-where types)
       (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
         (with-connection ()
-          (cl-postgres:prepare-query
-           postmodern:*database* ""
-           (format NIL "SELECT * FROM \"~a\" WHERE (\"server\"=$1 AND \"channel\"=$2 AND \"time\">=$3 AND \"time\"<=$4 ~a) ORDER BY \"time\" ~a LIMIT $5"
-                   table where order))
-          (cl-postgres:exec-prepared
-           postmodern:*database* "" (append (list server channel from to amount) args)
-           (cl-postgres:row-reader (fields)
-             (loop while (cl-postgres:next-row)
-                   collect (let ((table (make-hash-table :test 'equalp)))
-                             (loop for field across fields
-                                   do (setf (gethash (cl-postgres:field-name field) table)
-                                            (cl-postgres:next-field field))) table)))))))))
+          (apply #'query (funcall *select-messages* table where) server channel from to amount args))))))
 
 (defun channels ()
-  (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
-    (with-connection ()
-      (postmodern:query (format NIL "SELECT \"server\",\"channel\" FROM \"~a\" GROUP BY \"channel\",\"server\"" table)))))
+  (with-connection ()
+    (postmodern:query (funcall *select-channels* (or (uc:config-tree :chatlog :table) "chatlog")))))
 
 (define-api chatlog/get (server channel &optional types from to (amount "500") (order "DESC")) ()
   (api-output (fetch server channel types from to amount order)))
@@ -117,7 +146,7 @@
   (api-output (channels)))
 
 (define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (template "view.ctml"))
-  (setf (content-type *response*) "text/html")
+  (setf (content-type *response*) "application/xhtml+xml")
   (cond
     ((string-equal (or* page "log") "log")
      (let* ((type (or (get-var "type[]") NIL))
@@ -133,17 +162,12 @@
             (setf to (+ around (* 60 60 6))))))
        (setf from (maybe-parse-timestamp from))
        (setf to (maybe-parse-timestamp to))
-       (r-clip:process
-        (lquery:$ (node))
-        :messages (fetch (or server (uc:config-tree :chatlog :default-server) (error 'radiance-error :message "Configuration error."))
-                         (or channel (uc:config-tree :chatlog :default-channel) (error 'radiance-error :message "Configuration error."))
-                         types from to 10000 "ASC")
-        :from from :to to :types types)))
+       (r-clip:process T :messages (fetch server channel types from to 10000) :from from :to to :types types :page (format NIL "~a/#~a" server channel))))
     ((string-equal page "stats")
      )))
 
 (define-page index #@"log.irc/^$" (:lquery (template "index.ctml"))
-  (setf (content-type *response*) "text/html")
+  (setf (content-type *response*) "application/xhtml+xml")
   (r-clip:process
    (lquery:$ (node))
    :channels (sort (mapcar #'(lambda (entry) (format NIL "/~a/~a" (first entry) (subseq (second entry) 1))) (channels))
