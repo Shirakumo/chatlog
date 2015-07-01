@@ -33,6 +33,15 @@ article header h1{
     text-align: left;
 }
 
+article header a{
+    color: #FFF;
+    text-decoration: none;
+}
+
+article header a:hover{
+    color: #0088EE;
+}
+
 article .nav{
     display: flex;
     flex-wrap: nowrap;
