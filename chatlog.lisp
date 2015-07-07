@@ -128,7 +128,7 @@
         (to (or (parse-i to) (get-unix-time)))
         (amount (or (parse-i amount) 500))
         (channel (format NIL "#~a" channel)))
-    (when (< 10000 amount)
+    (when (< 1000 amount)
       (error 'api-argument-invalid :argument "amount" :message "Amount cannot be higher than 10000."))
     (multiple-value-bind (where args) (compute-where types)
       (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
@@ -162,7 +162,7 @@
             (setf to (+ around (* 60 60 6))))))
        (setf from (maybe-parse-timestamp from))
        (setf to (maybe-parse-timestamp to))
-       (r-clip:process T :messages (fetch server channel types from to 10000) :from from :to to :types types :page (format NIL "~a/#~a" server channel))))
+       (r-clip:process T :messages (fetch server channel types from to 1000) :from from :to to :types types :page (format NIL "~a/#~a" server channel))))
     ((string-equal page "stats")
      )))
 
