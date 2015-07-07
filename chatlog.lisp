@@ -139,8 +139,8 @@
   (with-connection ()
     (postmodern:query (funcall *select-channels* (or (uc:config-tree :chatlog :table) "chatlog")))))
 
-(define-api chatlog/get (server channel &optional types from to (amount "500") (order "DESC")) ()
-  (api-output (fetch server channel types from to amount order)))
+(define-api chatlog/get (server channel &optional types from to (amount "500")) ()
+  (api-output (fetch server channel types from to amount)))
 
 (define-api chatlog/channels () ()
   (api-output (channels)))
