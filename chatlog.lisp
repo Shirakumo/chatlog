@@ -85,6 +85,19 @@
     (string (parse-integer thing :junk-allowed T))
     (null NIL)))
 
+(defun parse-time-region (from to around)
+  (let ((from (or* from (- (get-unix-time) (* 60 60 12))))
+        (to (or* to (+ (get-unix-time) 60)))
+        (around (or* around NIL)))
+    (when around
+      (ignore-errors
+       (setf around (maybe-parse-timestamp around))
+       (when around
+         (setf from (- around (* 60 60 6)))
+         (setf to (+ around (* 60 60 6))))))
+    (values (maybe-parse-timestamp from)
+            (maybe-parse-timestamp to))))
+
 ;; Make sure these keywords are known.
 :SERVER :CHANNEL :NICK :TIME :TYPE :MESSAGE
 
@@ -124,9 +137,7 @@
                                     (cl-postgres:next-field field))) table)))))
 
 (defun fetch (server channel types from to amount)
-  (let ((from (or (parse-i from) (- (get-unix-time) (* 60 60 12))))
-        (to (or (parse-i to) (get-unix-time)))
-        (amount (or (parse-i amount) 500))
+  (let ((amount (or (parse-i amount) 500))
         (channel (format NIL "#~a" channel)))
     (when (< 1000 amount)
       (error 'api-argument-invalid :argument "amount" :message "Amount cannot be higher than 10000."))
@@ -139,8 +150,18 @@
   (with-connection ()
     (postmodern:query (funcall *select-channels* (or (uc:config-tree :chatlog :table) "chatlog")))))
 
-(define-api chatlog/get (server channel &optional types from to (amount "500")) ()
-  (api-output (fetch server channel types from to amount)))
+(define-api chatlog/get (server channel &optional types from to around (amount "500") (format "objects")) ()
+  (multiple-value-bind (from to) (parse-time-region from to around)
+    (cond ((string-equal format "objects")
+           (api-output (fetch server channel types from to amount)))
+          ((string-equal format "rendered")
+           (setf (content-type *response*) "text/plain")
+           (with-output-to-string (stream)
+             (format stream "--- ~a/~a ~a" server channel (format-long-time from))
+             (loop for event in (fetch server channel types from to amount)
+                   do (format stream "~&~a <~a> ~a"
+                              (format-long-time (gethash "time" event)) (gethash "nick" event) (gethash "message" event)))
+             (format stream "--- ~a/~a ~a" server channel (format-long-time to)))))))
 
 (define-api chatlog/channels () ()
   (api-output (channels)))
@@ -150,19 +171,9 @@
   (cond
     ((string-equal (or* page "log") "log")
      (let* ((type (or (get-var "type[]") NIL))
-            (types (or* (get-var "types") (format NIL "~{~a~}" type) *default-types*))
-            (from (or* (get-var "from") (- (get-unix-time) (* 60 60 12))))
-            (to (or* (get-var "to") (+ (get-unix-time) 60)))
-            (around (or* (get-var "around") NIL)))
-       (when around
-         (ignore-errors
-          (setf around (maybe-parse-timestamp around))
-          (when around
-            (setf from (- around (* 60 60 6)))
-            (setf to (+ around (* 60 60 6))))))
-       (setf from (maybe-parse-timestamp from))
-       (setf to (maybe-parse-timestamp to))
-       (r-clip:process T :messages (fetch server channel types from to 1000) :from from :to to :types types :page (format NIL "~a/#~a" server channel))))
+            (types (or* (get-var "types") (format NIL "~{~a~}" type) *default-types*)))
+       (multiple-value-bind (from to) (parse-time-region (get-var "from") (get-var "to") (get-var "around"))
+         (r-clip:process T :messages (fetch server channel types from to 1000) :from from :to to :types types :page (format NIL "~a/#~a" server channel)))))
     ((string-equal page "stats")
      )))
 
