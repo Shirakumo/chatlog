@@ -150,18 +150,19 @@
   (with-connection ()
     (postmodern:query (funcall *select-channels* (or (uc:config-tree :chatlog :table) "chatlog")))))
 
-(define-api chatlog/get (server channel &optional types from to around (amount "500") (format "objects")) ()
+(define-api chatlog/get (server channel &optional types from to around (amount "1000") (format "objects")) ()
   (multiple-value-bind (from to) (parse-time-region from to around)
-    (cond ((string-equal format "objects")
-           (api-output (fetch server channel types from to amount)))
-          ((string-equal format "rendered")
-           (setf (content-type *response*) "text/plain")
-           (with-output-to-string (stream)
-             (format stream "--- ~a/~a ~a" server channel (format-long-time from))
-             (loop for event in (fetch server channel types from to amount)
-                   do (format stream "~&~a <~a> ~a"
-                              (format-long-time (gethash "time" event)) (gethash "nick" event) (gethash "message" event)))
-             (format stream "--- ~a/~a ~a" server channel (format-long-time to)))))))
+    (let ((events (fetch server channel types from to amount)))
+      (cond ((string-equal format "objects")
+             (api-output events))
+            ((string-equal format "rendered")
+             (setf (content-type *response*) "text/plain")
+             (with-output-to-string (stream)
+               (loop initially (format stream "~&--- ~a/~a ~a" server channel (format-long-time (gethash "time" (first events))))
+                     for event in events
+                     do (format stream "~&~a <~a> ~a"
+                                (format-long-time (gethash "time" event)) (gethash "nick" event) (gethash "message" event))
+                     finally (format stream "~&--- ~a/~a ~a" server channel (format-long-time (gethash "time" event))))))))))
 
 (define-api chatlog/channels () ()
   (api-output (channels)))
