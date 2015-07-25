@@ -8,6 +8,7 @@
 (define-module #:chatlog
   (:nicknames #:org.tymoonnext.chatlog)
   (:use #:cl #:radiance)
+  (:domain "irclog")
   (:export))
 (in-package #:org.tymoonnext.chatlog)
 
@@ -167,7 +168,7 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view #@"log.irc/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (template "view.ctml"))
+(define-page view #@"irclog/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (template "view.ctml"))
   (setf (content-type *response*) "application/xhtml+xml")
   (cond
     ((string-equal (or* page "log") "log")
@@ -178,9 +179,13 @@
     ((string-equal page "stats")
      )))
 
-(define-page index #@"log.irc/^$" (:lquery (template "index.ctml"))
+(define-page index #@"irclog/^$" (:lquery (template "index.ctml"))
   (setf (content-type *response*) "application/xhtml+xml")
   (r-clip:process
    (lquery:$ (node))
    :channels (sort (mapcar #'(lambda (entry) (format NIL "/~a/~a" (first entry) (subseq (second entry) 1))) (channels))
                    #'string<)))
+
+(define-route log.irc->irclog :mapping (uri)
+  (when (equalp (domains uri) '("irc" "log"))
+    (setf (domains uri) (list "irclog"))))
