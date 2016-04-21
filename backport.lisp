@@ -10,6 +10,7 @@ Author: Nicolas Hafner <shinmera@tymoon.eu>
   (:export
    #:insert
    #:process-clozure
+   #:process-weechat
    #:process-file
    #:process-with-db))
 (in-package #:chatlog-backport)
@@ -44,7 +45,7 @@ Author: Nicolas Hafner <shinmera@tymoon.eu>
 
 (defun process-weechat (line)
   (cl-ppcre:register-groups-bind (time NIL joiner NIL quitter reason NIL oldnick newnick NIL sender message)
-      ("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\s(-->\\s([^ ]+) )?(<--\\s([^ ]+) \\(.*?\\) has quit \\((.*)\\)$)?(--\\s([^ ]+) is now known as ([^ ]+))?(>([^>]+)>\\s(.*))?" line)
+      ("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\s(-->\\s[+~@]?([^ ]+) )?(<--\\s[+~@]?([^ ]+) \\(.*?\\) has quit \\((.*)\\)$)?(--\\s[+~@]?([^ ]+) is now known as [+~@]?([^ ]+))?(>[+~@]?([^>]+)>\\s(.*))?" line)
     (let ((time (local-time:timestamp-to-unix
                  ;; Piece of shit timezone missing defaults. Kludge it by assuming it's our timezone too.
                  (local-time:parse-timestring time :date-time-separator #\  :offset (nth-value 9 (local-time:decode-timestamp (local-time:now)))))))
