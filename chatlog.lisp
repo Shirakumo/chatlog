@@ -112,9 +112,11 @@
 (defparameter *select-messages*
   (string-formatter
    "SELECT * ~
-    FROM \"~a\" ~
-    WHERE (\"server\"=$1 ~
-       AND \"channel\"=$2 ~
+    FROM \"chatlog\" ~
+    WHERE (\"channel-id\"=(SELECT \"id\" FROM \"channels\" WHERE 
+                               \"channels\".\"server\"=$1
+                           AND (\"channels\".\"channel\"=$2
+                                OR trim(leading '#' from \"channels\".\"channel\")=$2))
        AND \"time\">=$3 ~
        AND \"time\"<=$4 ~a) ~
     ORDER BY \"time\" ASC, \"id\" ASC ~
@@ -123,8 +125,8 @@
 (defparameter *select-channels*
   (string-formatter
    "SELECT \"server\",\"channel\" ~
-    FROM \"~a\" ~
-    GROUP BY \"channel\",\"server\""))
+    FROM \"channels\" ~
+    ORDER BY \"server\",\"channel\""))
 
 (defun query (query &rest parameters)
   (cl-postgres:prepare-query postmodern:*database* "" query)
@@ -138,18 +140,16 @@
                                     (cl-postgres:next-field field))) table)))))
 
 (defun fetch (server channel types from to amount)
-  (let ((amount (or (parse-i amount) 500))
-        (channel (format NIL "#~a" channel)))
+  (let ((amount (or (parse-i amount) 500)))
     (when (< 1000 amount)
       (error 'api-argument-invalid :argument "amount" :message "Amount cannot be higher than 10000."))
     (multiple-value-bind (where args) (compute-where types)
-      (let ((table (or (uc:config-tree :chatlog :table) "chatlog")))
-        (with-connection ()
-          (apply #'query (funcall *select-messages* table where) server channel from to amount args))))))
+      (with-connection ()
+        (apply #'query (funcall *select-messages* where) server channel from to amount args)))))
 
 (defun channels ()
   (with-connection ()
-    (postmodern:query (funcall *select-channels* (or (uc:config-tree :chatlog :table) "chatlog")))))
+    (postmodern:query (funcall *select-channels*))))
 
 (define-api chatlog/get (server channel &optional types from to around (amount "1000") (format "objects")) ()
   (multiple-value-bind (from to) (parse-time-region from to around)
@@ -168,7 +168,7 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view #@"irclog/^([a-zA-Z]+)/#?([a-zA-Z]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (template "view.ctml"))
+(define-page view #@"irclog/^([a-zA-Z]+)/(#*[a-zA-Z_\\-]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (template "view.ctml"))
   (setf (content-type *response*) "application/xhtml+xml")
   (cond
     ((string-equal (or* page "log") "log")
@@ -183,8 +183,8 @@
   (setf (content-type *response*) "application/xhtml+xml")
   (r-clip:process
    (lquery:$ (node))
-   :channels (sort (mapcar #'(lambda (entry) (format NIL "/~a/~a" (first entry) (subseq (second entry) 1))) (channels))
-                   #'string<)))
+   :channels (mapcar (lambda (entry) (format NIL "/~a/~a" (first entry) (second entry)))
+                     (channels))))
 
 (define-route log.irc->irclog :mapping (uri)
   (when (equalp (domains uri) '("irc" "log"))
