@@ -46,7 +46,8 @@
   (cl-ppcre:regex-replace-all "[^	\\x0A -퟿-�𐀀-􏿿]+" text ""))
 
 (defun time-link (unix &optional (types *default-types*) (keyword :around))
-  (format NIL "/~a?~(~a~)=~a~@[&types=~a~]#~a" (path (uri *request*)) keyword (format-long-time unix) types unix))
+  (format NIL "/~a?~(~a~)=~a~@[&types=~a~]#~a"
+          (escape-url (path (uri *request*))) keyword (format-long-time unix) types unix))
 
 (defun title-time (unix)
   (if unix
@@ -55,6 +56,9 @@
        :format '("Link to " :long-weekday ", " :ordinal-day " of " :long-month " " (:year 4) " " (:hour 2) #\: (:min 2) #\: (:sec 2))
        :timezone local-time:+utc-zone+)
       ""))
+
+(defun escape-url (url)
+  (cl-ppcre:regex-replace-all "#" url "%23"))
 
 (lquery:define-lquery-function chatlog-template (node object)
   (setf (plump:children node) (plump:make-child-array))

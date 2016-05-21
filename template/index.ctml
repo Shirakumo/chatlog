@@ -19,7 +19,7 @@
         <h2>Logging is available on the following channels:</h2>
         <ul iterate="channels" id="channel-list">
           <li>
-            <a href="#" lquery="(text *) (attr :href *)"></a>
+            <a href="#" lquery="(text *) (attr :href (chatlog::escape-url *))"></a>
           </li>
         </ul>
       </section>
