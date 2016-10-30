@@ -30,7 +30,7 @@
             <tr>
               <td>
                 <c:using value="(clipboard &quot;time&quot;)">
-                  <a name="TIMESTAMP" lquery="(text (chatlog::format-time *)) (attr :name * :href (chatlog::time-link * (*** :types)) :title (chatlog::title-time *))"></a>
+                  <a name="TIMESTAMP" lquery="(text (format-clock-time *)) (attr :name * :href (chatlog::time-link * (*** :types)) :title (chatlog::title-time *))"></a>
                 </c:using>
               </td>
               <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>

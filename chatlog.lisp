@@ -25,29 +25,16 @@
   (local-time:timestamp-to-unix
    (local-time:now)))
 
-(defun format-time (unix)
-  (if unix
-      (local-time:format-timestring
-       NIL (local-time:unix-to-timestamp unix)
-       :format '((:hour 2) #\: (:min 2) #\: (:sec 2))
-       :timezone local-time:+utc-zone+)
-      ""))
-
-(defun format-long-time (unix)
-  (if unix
-      (local-time:format-timestring
-       NIL (local-time:unix-to-timestamp unix)
-       :format '((:year 4) #\- (:month 2) #\- (:day 2) #\T (:hour 2) #\: (:min 2) #\: (:sec 2))
-       :timezone local-time:+utc-zone+)
-      ""))
-
 (defun format-text (text)
   ;; Strip XML invalid characters... *sigh*.
   (cl-ppcre:regex-replace-all "[^	\\x0A -퟿-�𐀀-􏿿]+" text ""))
 
+(defun format-machine-unixtime (unix)
+  (format-machine-date (unix-to-universal unix)))
+
 (defun time-link (unix &optional (types *default-types*) (keyword :around))
   (format NIL "/~a?~(~a~)=~a~@[&types=~a~]#~a"
-          (escape-url (path (uri *request*))) keyword (format-long-time unix) types unix))
+          (escape-url (path (uri *request*))) keyword (format-machine-unixtime unix) types unix))
 
 (defun title-time (unix)
   (if unix
@@ -163,11 +150,11 @@
             ((string-equal format "rendered")
              (setf (content-type *response*) "text/plain")
              (with-output-to-string (stream)
-               (loop initially (format stream "~&--- ~a/~a ~a" server channel (format-long-time (gethash "time" (first events))))
+               (loop initially (format stream "~&--- ~a/~a ~a" server channel (format-machine-unixtime (gethash "time" (first events))))
                      for event in events
                      do (format stream "~&~a <~a> ~a"
-                                (format-long-time (gethash "time" event)) (gethash "nick" event) (gethash "message" event))
-                     finally (format stream "~&--- ~a/~a ~a" server channel (format-long-time (gethash "time" event))))))))))
+                                (format-machine-unixtime (gethash "time" event)) (gethash "nick" event) (gethash "message" event))
+                     finally (format stream "~&--- ~a/~a ~a" server channel (format-machine-unixtime (gethash "time" event))))))))))
 
 (define-api chatlog/channels () ()
   (api-output (channels)))
