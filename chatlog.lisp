@@ -49,7 +49,7 @@
 
 (lquery:define-lquery-function chatlog-template (node object)
   (setf (plump:children node) (plump:make-child-array))
-  (plump:parse (template (format NIL "~(~a~).ctml" object)) :root node)
+  (plump:parse (@template (format NIL "~(~a~).ctml" object)) :root node)
   node)
 
 (defun compute-where (types)
@@ -159,7 +159,7 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view "irclog/^([a-zA-Z]+)/(#*[a-zA-Z_\\-]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (template "view.ctml"))
+(define-page view "irclog/^([a-zA-Z]+)/(#*[a-zA-Z_\\-]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :lquery (@template "view.ctml"))
   (setf (content-type *response*) "application/xhtml+xml")
   (cond
     ((string-equal (or* page "log") "log")
@@ -170,7 +170,7 @@
     ((string-equal page "stats")
      )))
 
-(define-page index "irclog/^$" (:lquery (template "index.ctml"))
+(define-page index "irclog/^$" (:lquery (@template "index.ctml"))
   (setf (content-type *response*) "application/xhtml+xml")
   (r-clip:process
    (lquery:$ (node))
