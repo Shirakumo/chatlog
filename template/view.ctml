@@ -13,7 +13,7 @@
     <article>
       <header>
         <div>
-          <h1><c:splice lquery="(text page)"></c:splice> - <a href="/">TyNET IRC Chatlog</a></h1>
+          <h1><c:splice lquery="(text page)"></c:splice> - <a @href="/">TyNET IRC Chatlog</a></h1>
         </div>
       </header>
       <c:splice lquery="(chatlog-template :nav)" />
