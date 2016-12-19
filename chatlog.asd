@@ -10,7 +10,7 @@
 
 (defsystem chatlog
   :defsystem-depends-on (:radiance)
-  :class "radiance:module"
+  :class "radiance:virtual-module"
   :name "chatlog"
   :version "0.0.1"
   :license "Artistic"
