@@ -15,10 +15,10 @@
 (defvar *default-types* "mnaot")
 
 (defmacro with-connection (() &body body)
-  `(postmodern:with-connection (list (defaulted-config "irc" :chatlog :database)
-                                     (defaulted-config "irc" :chatlog :user)
-                                     (or (config :chatlog :pass) (error 'radiance-error :message "Configuration error."))
-                                     (defaulted-config "localhost" :chatlog :host))
+  `(postmodern:with-connection (list (defaulted-config "irc" :database)
+                                     (defaulted-config "irc" :user)
+                                     (or (config :pass) (error 'internal-error :message "Configuration error."))
+                                     (defaulted-config "localhost" :host))
      ,@body))
 
 (defun get-unix-time ()
