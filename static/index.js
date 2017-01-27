@@ -1,18 +1,11 @@
-$(function(){
-    // Mark anchored
-    var hash = window.location.hash.substring(1);
-    if(hash !== ""){
-        $("tr:has(a[name="+hash+"]) td")
-            .wrapInner("<mark></mark>");
-    }
-    
+$(function(){    
     // Coloured nicks
     function hashCode(str) {
         var hash = 0;
         for (var i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        return hash;
+        return Math.abs(hash);
     }
 
     var colors = ["red", "green", "blue",
@@ -23,7 +16,7 @@ $(function(){
                   "midnightblue", "navy", "steelblue",
                   "sienna", "purple", "indigo",
                   "forestgreen", "darkslateblue"];
-    $("tr td:nth-child(2)").each(function(){
+    $(".nick").each(function(){
         $(this).css("color", colors[hashCode($(this).text()) % colors.length]);
     });
 
@@ -35,7 +28,7 @@ $(function(){
         return this;
     };
     
-    $("tr td:nth-child(3)").each(function(){
+    $(".text").each(function(){
         var text = $(this).text();
         var urlregex = /([a-zA-Z]+):\/\/([A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]*)/g;
         var previndex = 0;
@@ -63,4 +56,10 @@ $(function(){
             break;
         }
     });
+
+    // Mark anchored
+    var hash = window.location.hash.substring(1);
+    if(hash !== ""){
+        $(".message[id="+hash+"] .text").wrapInner("<mark>");
+    }
 });

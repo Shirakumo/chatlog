@@ -10,36 +10,29 @@
     <link rel="stylesheet" type="text/css" @href="/static/chatlog/index.css" />
   </head>
   <body>
-    <article>
+    <article id="chatlog">
       <header>
-        <div>
-          <h1><c:splice lquery="(text page)"></c:splice> - <a @href="/">TyNET IRC Chatlog</a></h1>
-        </div>
+        <h1><c:splice lquery="(text page)"></c:splice> - <a @href="irclog/">IRC Chatlog</a></h1>
+        <nav id="top">
+          <a @href='irclog/{0}?from={1}#top (path (uri (*request*))) (- from timestep)' class="button backward" title="Go backwards by twelve hours from the top.">backward</a>
+          <time lquery="(time (unix-to-universal-time from) :fancy)"></time>
+          <a @href='irclog/{0}?from={1}#top (path (uri (*request*))) (+ from timestep)' class="button forward" title="Go forwards by twelve hours from the top.">forward</a>
+        </nav>
       </header>
-      <c:splice lquery="(chatlog-template :nav)" />
-      <div id="table-body">
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Nick</th>
-              <th>Message</th>
-            </tr>
-          </thead>
-          <tbody iterate="messages">
-            <tr>
-              <td>
-                <c:using value="(clipboard &quot;time&quot;)">
-                  <a name="TIMESTAMP" lquery="(text (format-clock-time *)) (attr :name * :href (chatlog::time-link * (*** :types)) :title (chatlog::title-time *))"></a>
-                </c:using>
-              </td>
-              <td lquery="(text (clipboard &quot;nick&quot;)) (attr :title (clipboard &quot;nick&quot;))"></td>
-              <td lquery="(text (chatlog::format-text (clipboard &quot;message&quot;)))"></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <c:splice lquery="(chatlog-template :nav)" />
+      <section iterate="messages">
+        <div class="message" lquery='(attr :id (clipboard "time"))'>
+          <a class="time" lquery='(time (unix-to-universal-time (clipboard "time")) :clock)' @href='irclog/{0}?around={1}#{1} (path (uri (*request*))) (clipboard "time")'></a>
+          <span class="nick" lquery='(text (clipboard "nick")) (attr :title (clipboard "nick"))'></span>
+          <span class="text" lquery='(text (chatlog::format-text (clipboard "message")))'></span>
+        </div>
+      </section>
+      <footer>
+        <nav id="bottom">
+          <a @href='irclog/{0}?to={1}#bottom (path (uri (*request*))) (- to timestep)' class="button backward" title="Go backwards by twelve hours from the bottom.">backward</a>
+          <time lquery="(time (unix-to-universal-time to) :fancy)"></time>
+          <a @href='irclog/{0}?to={1}#bottom (path (uri (*request*))) (+ to timestep)' class="button forward" title="Go forwards by twelve hours from the bottom.">forward</a>
+        </nav>
+      </footer>
     </article>
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" @src="/static/chatlog/index.js"></script>

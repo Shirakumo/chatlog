@@ -13,6 +13,7 @@
 (in-package #:org.tymoonnext.chatlog)
 
 (defvar *default-types* "mnaot")
+(defvar *timestep* (* 60 60 12))
 
 (defmacro with-connection (() &body body)
   `(postmodern:with-connection (list (defaulted-config "irc" :database)
@@ -28,24 +29,6 @@
 (defun format-text (text)
   ;; Strip XML invalid characters... *sigh*.
   (cl-ppcre:regex-replace-all "[^	\\x0A -퟿-�𐀀-􏿿]+" text ""))
-
-(defun format-machine-unixtime (unix)
-  (format-machine-date (unix-to-universal unix)))
-
-(defun time-link (unix &optional (types *default-types*) (keyword :around))
-  (format NIL "/~a?~(~a~)=~a~@[&types=~a~]#~a"
-          (escape-url (path (uri *request*))) keyword (format-machine-unixtime unix) types unix))
-
-(defun title-time (unix)
-  (if unix
-      (local-time:format-timestring
-       NIL (local-time:unix-to-timestamp unix)
-       :format '("Link to " :long-weekday ", " :ordinal-day " of " :long-month " " (:year 4) " " (:hour 2) #\: (:min 2) #\: (:sec 2))
-       :timezone local-time:+utc-zone+)
-      ""))
-
-(defun escape-url (url)
-  (cl-ppcre:regex-replace-all "#" url "%23"))
 
 (lquery:define-lquery-function chatlog-template (node object)
   (setf (plump:children node) (plump:make-child-array))
@@ -78,17 +61,20 @@
     (null NIL)))
 
 (defun parse-time-region (from to around)
-  (let ((from (or* from (- (get-unix-time) (* 60 60 12))))
-        (to (or* to (+ (get-unix-time) 60)))
-        (around (or* around NIL)))
-    (when around
-      (ignore-errors
-       (setf around (maybe-parse-timestamp around))
-       (when around
-         (setf from (- around (* 60 60 6)))
-         (setf to (+ around (* 60 60 6))))))
-    (values (maybe-parse-timestamp from)
-            (maybe-parse-timestamp to))))
+  (let ((from (maybe-parse-timestamp from))
+        (to (maybe-parse-timestamp to))
+        (around (maybe-parse-timestamp around)))
+    (cond (around
+           (setf from (- around (round *timestep* 2)))
+           (setf to (+ around (round *timestep* 2))))
+          ((and from (not to))
+           (setf to (+ from *timestep*)))
+          ((and to (not from))
+           (setf from (- to *timestep*)))
+          ((and (not from) (not to))
+           (setf from (- (get-unix-time) (round *timestep* 2)))
+           (setf to (+ (get-unix-time) (round *timestep* 2)))))
+    (values from to)))
 
 ;; Make sure these keywords are known.
 :SERVER :CHANNEL :NICK :TIME :TYPE :MESSAGE
@@ -117,7 +103,7 @@
   (string-formatter
    "SELECT \"server\",\"channel\" ~
     FROM \"channels\" ~
-    ORDER BY \"server\",\"channel\""))
+    ORDER BY \"server\" DESC,\"channel\" DESC"))
 
 (defun query (query &rest parameters)
   (cl-postgres:prepare-query postmodern:*database* "" query)
@@ -139,8 +125,14 @@
         (apply #'query (funcall *select-messages* where) server channel from to amount args)))))
 
 (defun channels ()
-  (with-connection ()
-    (postmodern:query (funcall *select-channels*))))
+  (let ((channels ()))
+    (loop for (server channel) in (with-connection ()
+                                    (postmodern:query (funcall *select-channels*)))
+          do (let ((cons (assoc server channels :test #'string=)))
+               (if cons
+                   (setf (cdr cons) (cons channel (cdr cons)))
+                   (push (list server channel) channels))))
+    channels))
 
 (define-api chatlog/get (server channel &optional types from to around (amount "1000") (format "objects")) ()
   (multiple-value-bind (from to) (parse-time-region from to around)
@@ -159,23 +151,23 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view "irclog/^([a-zA-Z]+)/(#*[a-zA-Z_\\-]+)(/([^.]*))?$" (:uri-groups (server channel NIL page) :clip (@template "view.ctml"))
+(define-page view "irclog/^([a-zA-Z]+)/(#*[a-zA-Z_\\-]+)$" (:uri-groups (server channel) :clip "view.ctml")
   (setf (content-type *response*) "application/xhtml+xml")
-  (cond
-    ((string-equal (or* page "log") "log")
-     (let* ((type (or (get-var "type[]") NIL))
-            (types (or* (get-var "types") (format NIL "~{~a~}" type) *default-types*)))
-       (multiple-value-bind (from to) (parse-time-region (get-var "from") (get-var "to") (get-var "around"))
-         (r-clip:process T :messages (fetch server channel types from to 1000) :from from :to to :types types :page (format NIL "~a/~a" server channel)))))
-    ((string-equal page "stats")
-     )))
+  (let* ((type (or (get-var "type[]") NIL))
+         (types (or* (get-var "types") (format NIL "~{~a~}" type) *default-types*)))
+    (multiple-value-bind (from to) (parse-time-region (get-var "from") (get-var "to") (get-var "around"))
+      (r-clip:process
+       T :messages (fetch server channel types from to 1000)
+         :from from
+         :to to
+         :timestep *timestep*
+         :types types
+         :page (format NIL "~a/~a" server channel)))))
 
-(define-page index "irclog/^$" (:clip (@template "index.ctml"))
+(define-page index "irclog/^$" (:clip "index.ctml")
   (setf (content-type *response*) "application/xhtml+xml")
   (r-clip:process
-   (lquery:$ (node))
-   :channels (mapcar (lambda (entry) (format NIL "/~a/~a" (first entry) (second entry)))
-                     (channels))))
+   T :channels (channels)))
 
 (define-route log.irc->irclog :mapping (uri)
   (when (equalp (domains uri) '("irc" "log"))

@@ -1,0 +1,97 @@
+(:let ((flavor-bg "#0088EE")
+       (flavor-fg "#FFFFFF")
+       (main-bg "#000000")
+       (main-fg "#FFFFFF")
+       (header-bg "#151515"))
+  (html
+   :height 100%)
+  (body
+   :min-height 100%
+   :position relative
+   :padding 0 :margin 0
+   :font-family sans-serif
+   :font-size 14pt
+   :background #(main-bg)
+   :color #(main-fg)
+   (.button
+    :background #(flavor-bg)
+    :color #(flavor-fg)
+    :text-decoration none
+    :padding 5px)
+   (".button:hover"
+    :background "#FFF"
+    :color "#000")
+   (article
+    :position absolute
+    :top 0 :left 0 :right 0 :bottom 0
+    :display flex
+    :flex-direction column
+    :min-height 100%)
+   ((:or header footer)
+    :background #(header-bg)
+    (nav
+     :display flex
+     :align-items center
+     :justify-content space-between
+     (time :text-align center)))
+   (header
+    :border-bottom 3px solid #(flavor-bg)
+    (h1 :margin 0
+        :padding 10px
+        :text-align center
+        :font-size 2em
+        (a :color #(main-fg))))
+   (footer
+    :border-top 3px solid #(flavor-bg))
+   (section
+    :flex-grow 1
+    :overflow-y auto
+    :background "#FFF"
+    :color "#000"
+    :padding 10px)
+   ("#index"
+    (section
+     :text-align center
+     (h2 :text-transform capitalize
+         :font-size 2em)
+     (ul :list-style none
+         :padding 0)
+     (>ul
+      (ul
+       (li :display inline-block
+           :margin 10px)))))
+   ("#chatlog"
+    (section
+     :border-collapse collapse
+     :font-family monospace
+     (.message
+      :margin 5px 0 0 0
+      :display flex
+      (.time :max-width 100px
+             :min-width 100px
+             :text-align right
+             :white-space nowrap
+             :text-decoration none)
+      (.nick :max-width 100px
+             :min-width 100px
+             :overflow-x hidden
+             :text-overflow ellipsis
+             :margin 0 10px 0 10px)
+      (.text :flex-grow 1
+             :word-wrap break-word
+             :white-space pre-wrap
+             :min-width 0px))))))
+
+(:media "(max-width: 500px)"
+        (body
+         ("#index"
+          (section
+           :font-size 1.5em
+           (ul :margin 0
+               :padding 0)))
+         ("#chatlog"
+          (section
+           :padding 10px 0 10px 0
+           (.message
+            :font-size 0.8em
+            (.time :display none))))))

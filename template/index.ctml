@@ -2,24 +2,24 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8"/>
-    <title>TyNET IRC Chatlog</title>
+    <title>IRC Chatlog</title>
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content="TyNET IRC Chatlog" />
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" type="text/css" @href="/static/chatlog/index.css" />
   </head>
   <body>
-    <article>
+    <article id="index">
       <header>
-        <div>
-          <h1>TyNET IRC Chatlog</h1>
-        </div>
+        <h1>IRC Chatlog</h1>
       </header>
-      <section id="generic-body">
-        <h2>Logging is available on the following channels:</h2>
-        <ul iterate="channels" id="channel-list">
+      <section>
+        <ul iterate="channels" class="server-list">
           <li>
-            <a href="#" lquery="(text *) (attr :href (chatlog::escape-url *))"></a>
+            <h2 lquery="(text (first *))">SERVER</h2>
+            <ul iterate="(rest *)" class="channel-list">
+              <li><a class="button" href="#" @href="irclog/{0}/{1} (first **) *" lquery="(text *)"></a></li>
+            </ul>
           </li>
         </ul>
       </section>
