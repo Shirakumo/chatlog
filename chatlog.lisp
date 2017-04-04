@@ -142,11 +142,11 @@
             ((string-equal format "rendered")
              (setf (content-type *response*) "text/plain")
              (with-output-to-string (stream)
-               (loop initially (format stream "~&--- ~a/~a ~a" server channel (format-machine-unixtime (gethash "time" (first events))))
+               (loop initially (format stream "~&--- ~a/~a ~a" server channel (format-fancy-date (unix-to-universal-time (gethash "time" (first events)))))
                      for event in events
                      do (format stream "~&~a <~a> ~a"
-                                (format-machine-unixtime (gethash "time" event)) (gethash "nick" event) (gethash "message" event))
-                     finally (format stream "~&--- ~a/~a ~a" server channel (format-machine-unixtime (gethash "time" event))))))))))
+                                (format-clock-time (unix-to-universal-time (gethash "time" event))) (gethash "nick" event) (gethash "message" event))
+                     finally (format stream "~&--- ~a/~a ~a" server channel (format-fancy-date (unix-to-universal-time (gethash "time" (first events))))))))))))
 
 (define-api chatlog/channels () ()
   (api-output (channels)))
