@@ -14,13 +14,60 @@
 
 (defvar *default-types* "mnaot")
 (defvar *timestep* (* 60 60 12))
+(defvar *connections*)
+(defvar *connections-lock* (bt:make-lock "connections"))
+(defvar *connections-condition* (bt:make-condition-variable :name "connections"))
+
+(defun open-connections (&key (connections (defaulted-config 5 :connections))
+                              (db (defaulted-config "irc" :database))
+                              (user (defaulted-config "irc" :user))
+                              (pass (config :pass))
+                              (host (defaulted-config "localhost" :host)))
+  (bt:with-lock-held (*connections-lock*)
+    (when (boundp '*connections*)
+      (error "Connections already opened."))
+    (setf *connections* NIL)
+    (handler-bind ((error (lambda (err)
+                            (declare (ignore err))
+                            (makunbound '*connections*))))
+      (loop repeat connections
+            do (push (or (postmodern:connect db user pass host)
+                         (error "Failed to connect to chatlog database."))
+                     *connections*)))))
+
+(defun close-connections ()
+  (bt:with-lock-held (*connections-lock*)
+    (unless (boundp '*connections*)
+      (error "Connections already closed."))
+    (loop for connection = (pop *connections*)
+          while connection
+          do (ignore-errors (postmodern:disconnect connection)))
+    (makunbound '*connections*)))
+
+(defun acquire-connection ()
+  (bt:with-lock-held (*connections-lock*)
+    (loop for connection = (pop *connections*)
+          until connection
+          do (bt:condition-wait *connections-condition* *connections-lock*
+                                :timeout 5)
+          finally (unless (postmodern:connected-p connection)
+                    (postmodern:reconnect connection))
+                  (return connection))))
+
+(defun release-connection (connection)
+  (bt:with-lock-held (*connections-lock*)
+    (push connection *connections*))
+  (bt:condition-notify *connections-condition*))
+
+(defun call-with-connection (function)
+  (if postmodern:*database*
+      (funcall function)
+      (let ((postmodern:*database* (acquire-connection)))
+        (unwind-protect (funcall function)
+          (release-connection postmodern:*database*)))))
 
 (defmacro with-connection (() &body body)
-  `(postmodern:with-connection (list (defaulted-config "irc" :database)
-                                     (defaulted-config "irc" :user)
-                                     (or (config :pass) (error 'internal-error :message "Configuration error."))
-                                     (defaulted-config "localhost" :host))
-     ,@body))
+  `(call-with-connection (lambda () ,@body)))
 
 (defun get-unix-time ()
   (local-time:timestamp-to-unix
@@ -172,3 +219,9 @@
 (define-route log.irc->irclog :mapping (uri)
   (when (equalp (domains uri) '("irc" "log"))
     (setf (domains uri) (list "irclog"))))
+
+(define-trigger server-start ()
+  (open-connections))
+
+(define-trigger server-stop ()
+  (close-connections))
