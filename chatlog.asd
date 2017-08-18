@@ -19,7 +19,9 @@
   :description "Frontend for Colleen's chatlog-pg module."
   :serial T
   :components ((:file "chatlog"))
-  :depends-on (:r-clip
+  :depends-on ((:interface :rate)
+               :r-clip
                :postmodern
                :local-time
-               :ubiquitous))
+               :ubiquitous
+               :cl-ppcre))

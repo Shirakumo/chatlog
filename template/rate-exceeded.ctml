@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Search - IRC Chatlog</title>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="IRC Chatlog" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" type="text/css" @href="/static/chatlog/index.css" />
+  </head>
+  <body>
+    <article id="search">
+      <header>
+        <h1>Search - IRC Chatlog</h1>
+      </header>
+      <section>
+        <div class="error">
+          Please wait <span lquery="(text time-left)"></span> seconds before the next search.
+        </div>
+      </section>
+    </article>
+  </body>
+</html>

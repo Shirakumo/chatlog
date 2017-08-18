@@ -82,11 +82,11 @@
   (plump:parse (@template (format NIL "~(~a~).ctml" object)) :root node)
   node)
 
-(defun compute-where (types)
+(defun compute-where (types &optional (start-var 6))
   (let ((types (loop for char across (or types "") collect (string char))))
     (values
      (format NIL "~@[ AND (~{\"type\"=$~a~^ OR ~})~]"
-             (loop for i from 6
+             (loop for i from start-var
                    for type in types
                    collect i))
      types)))
@@ -99,6 +99,14 @@
           (local-time:timestamp-to-unix
            (local-time:parse-timestring thing :allow-missing-elements T)))))
     (number thing)
+    (null thing)))
+
+(defun parse-search (thing)
+  (typecase thing
+    (string
+     (let ((thing (string-trim " " thing)))
+       (when (string/= thing "")
+         (format NIL "%~a%" (cl-ppcre:regex-replace-all " +" thing "%")))))
     (null thing)))
 
 (defun parse-i (thing)
@@ -137,14 +145,31 @@
   (string-formatter
    "SELECT * ~
     FROM \"chatlog\" ~
-    WHERE (\"channel-id\"=(SELECT \"id\" FROM \"channels\" WHERE 
-                               \"channels\".\"server\"=$1
-                           AND (\"channels\".\"channel\"=$2
-                                OR trim(leading '#' from \"channels\".\"channel\")=$2))
+    WHERE (\"channel-id\"=(SELECT \"id\" FROM \"channels\" WHERE ~
+                               \"channels\".\"server\"=$1 ~
+                           AND (\"channels\".\"channel\"=$2 ~
+                                OR trim(leading '#' from \"channels\".\"channel\")=$2)) ~
        AND \"time\">=$3 ~
-       AND \"time\"<=$4 ~a) ~
+       AND \"time\"<=$4 ~
+       ~a) ~
     ORDER BY \"time\" ASC, \"id\" ASC ~
     LIMIT $5"))
+
+(defparameter *search-messages*
+  (string-formatter
+   "SELECT * ~
+    FROM \"chatlog\" ~
+    WHERE (\"channel-id\"=(SELECT \"id\" FROM \"channels\" WHERE ~
+                               \"channels\".\"server\"=$1 ~
+                           AND (\"channels\".\"channel\"=$2 ~
+                                OR trim(leading '#' from \"channels\".\"channel\")=$2)) ~
+       AND \"time\">=$3 ~
+       AND \"time\"<=$4 ~
+       AND \"nick\" ILIKE $5 ~
+       AND \"message\" ILIKE $6 ~
+       ~a) ~
+    ORDER BY \"time\" ASC, \"id\" ASC ~
+    LIMIT $7"))
 
 (defparameter *select-channels*
   (string-formatter
@@ -163,13 +188,22 @@
                            do (setf (gethash (cl-postgres:field-name field) table)
                                     (cl-postgres:next-field field))) table)))))
 
-(defun fetch (server channel types from to amount)
+(define-condition rate-exceeded (error)
+  ((time-left :initarg :time-left :accessor time-left)))
+
+(rate:define-limit chatlog-search (time-left :timeout 10)
+  (error 'rate-exceeded :time-left time-left))
+
+(defun fetch (server channel types from to by search amount)
   (let ((amount (or (parse-i amount) 500)))
     (when (< 1000 amount)
       (error 'api-argument-invalid :argument "amount" :message "Amount cannot be higher than 10000."))
-    (multiple-value-bind (where args) (compute-where types)
+    (multiple-value-bind (where args) (compute-where types (if (or search by) 8 6))
       (with-connection ()
-        (apply #'query (funcall *select-messages* where) server channel from to amount args)))))
+        (if (or search by)
+            (rate:with-limitation (chatlog-search)
+              (apply #'query (funcall *search-messages* where) server channel from to (or by "%") (or search "%") amount args))
+            (apply #'query (funcall *select-messages* where) server channel from to amount args))))))
 
 (defun channels ()
   (let ((channels ()))
@@ -181,9 +215,9 @@
                    (push (list server channel) channels))))
     channels))
 
-(define-api chatlog/get (server channel &optional types from to around (amount "1000") (format "objects")) ()
+(define-api chatlog/get (server channel &optional types from to around by search (amount "1000") (format "objects")) ()
   (multiple-value-bind (from to) (parse-time-region from to around)
-    (let ((events (fetch server channel types from to amount)))
+    (let ((events (fetch server channel types from to (when (and by (string/= by "")) by) (parse-search search) amount)))
       (cond ((string-equal format "objects")
              (api-output events))
             ((string-equal format "rendered")
@@ -200,16 +234,47 @@
 
 (define-page view "irclog/^([a-zA-Z]+)/(#*[a-zA-Z_\\-]+)$" (:uri-groups (server channel) :clip "view.ctml")
   (setf (content-type *response*) "application/xhtml+xml")
-  (let* ((type (or (get-var "type[]") NIL))
+  (let* ((search (post/get "search"))
+         (by (post/get "by"))
+         (type (or (get-var "type[]") NIL))
          (types (or* (get-var "types") (format NIL "~{~a~}" type) *default-types*)))
     (multiple-value-bind (from to) (parse-time-region (get-var "from") (get-var "to") (get-var "around"))
-      (r-clip:process
-       T :messages (fetch server channel types from to 1000)
-         :from from
-         :to to
-         :timestep *timestep*
-         :types types
-         :page (format NIL "~a/~a" server channel)))))
+      (handler-case
+          (r-clip:process
+           T :messages (fetch server channel types from to (when (and by (string/= by "")) by) (parse-search search) 1000)
+             :from from
+             :to to
+             :timestep *timestep*
+             :types types
+             :page (format NIL "~a/~a" server channel))
+        (rate-exceeded (err)
+          (r-clip:process (@template "rate-exceeded.ctml")
+                          :time-left (time-left err)))))))
+
+(defun format-datetime-timestring (unix)
+  (local-time:format-timestring NIL (local-time:unix-to-timestamp unix)
+                                :format '((:year 4) #\- (:month 2) #\- (:day 2) #\T (:hour 2) #\: (:min 2) #\: (:sec 2))))
+
+(define-page search "irclog/search" (:clip "search.ctml")
+  (cond ((string= (post/get "action") "search")
+         (redirect (uri-to-url (make-uri :path (post/get "channel") :domains '("irclog"))
+                               :representation :external
+                               :query `(("from" . ,(post/get "from"))
+                                        ("to" . ,(post/get "to"))
+                                        ("search" . ,(post/get "search"))
+                                        ("by" . ,(post/get "by"))))))
+        (T
+         (setf (content-type *response*) "application/xhtml+xml")
+         (multiple-value-bind (from to) (parse-time-region (get-var "from") (get-var "to") (get-var "around"))
+           (r-clip:process
+            T :channel (post/get "channel")
+              :channels (loop for (server . channels) in (channels)
+                              nconc (loop for channel in channels
+                                          collect (format NIL "~a/~a" server channel)))
+              :from (format-datetime-timestring from)
+              :to (format-datetime-timestring to)
+              :search (post/get "search")
+              :by (post/get "by"))))))
 
 (define-page index "irclog/^$" (:clip "index.ctml")
   (setf (content-type *response*) "application/xhtml+xml")

@@ -2,9 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8"/>
-    <title><c:splice lquery="(text page)"></c:splice> - TyNET IRC Chatlog</title>
+    <title><c:splice lquery="(text page)"></c:splice> - IRC Chatlog</title>
     <meta name="viewport" content="width=device-width, user-scalable=yes" />
-    <meta name="description" content="TyNET IRC Chatlog" />
+    <meta name="description" content="IRC Chatlog" />
     <meta name="robots" content="index, follow" />
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" @href="/static/chatlog/index.css" />
@@ -13,6 +13,7 @@
     <article id="chatlog">
       <header>
         <h1><c:splice lquery="(text page)"></c:splice> - <a @href="irclog/">IRC Chatlog</a></h1>
+        <a class="search-button" @href="irclog/search">Search</a>
         <nav>
           <a @href='irclog/{0}?from={1} (path (uri (*request*))) (- from timestep)' class="button backward" title="Go backwards by twelve hours from the top."><i class="fa fa-backward" aria-hidden="true"></i></a>
           <time lquery="(time (unix-to-universal-time from) :fancy)"></time>

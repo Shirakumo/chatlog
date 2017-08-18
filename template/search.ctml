@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Search - IRC Chatlog</title>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="IRC Chatlog Search" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" type="text/css" @href="/static/chatlog/index.css" />
+  </head>
+  <body>
+    <article id="search">
+      <header>
+        <h1>Search - <a @href="irclog/">IRC Chatlog</a></h1>
+      </header>
+      <section>
+        <form method="get" action="#">
+          <div><label>Channel:</label><select name="channel" iterate="channels" required><option lquery='(val *) (text *) (attr :selected (when (string= * (** :channel)) "selected"))'/></select></div>
+          <div><label>Starting at:</label><input type="datetime-local" name="from" lquery="(val from)" /></div>
+          <div><label>Ending at:</label><input type="datetime-local" name="to" lquery="(val to)" /></div>
+          <div><label>Message contains:</label><input type="text" name="search" lquery="(val search)" /></div>
+          <div><label>Written by:</label><input type="text" name="by" lquery="(val by)" /></div>
+          <div><input type="submit" name="action" value="search" /></div>
+        </form>
+      </section>
+    </article>
+  </body>
+</html>
