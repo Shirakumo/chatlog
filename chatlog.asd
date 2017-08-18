@@ -4,10 +4,6 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(defpackage #:org.tymoonnext.chatlog.asdf
-  (:use #:cl #:asdf))
-(in-package #:org.tymoonnext.chatlog.asdf)
-
 (defsystem chatlog
   :defsystem-depends-on (:radiance)
   :class "radiance:virtual-module"
