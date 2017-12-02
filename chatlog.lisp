@@ -256,7 +256,7 @@
   (local-time:format-timestring NIL (local-time:unix-to-timestamp unix)
                                 :format '((:year 4) #\- (:month 2) #\- (:day 2) #\T (:hour 2) #\: (:min 2) #\: (:sec 2))))
 
-(define-page search "irclog/search" (:clip "search.ctml")
+(define-page log-search "irclog/search" (:clip "search.ctml")
   (cond ((string= (post/get "action") "search")
          (redirect (uri-to-url (make-uri :path (post/get "channel") :domains '("irclog"))
                                :representation :external
