@@ -109,6 +109,7 @@
       (.nick :max-width 100px
              :min-width 100px
              :overflow-x hidden
+             :white-space nowrap
              :text-overflow ellipsis
              :margin 0 10px 0 10px)
       (.text :flex-grow 1
