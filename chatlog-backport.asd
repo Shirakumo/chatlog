@@ -6,7 +6,7 @@
 
 (asdf:defsystem chatlog-backport
   :version "0.0.1"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Backporting functions to insert logs from a log file."

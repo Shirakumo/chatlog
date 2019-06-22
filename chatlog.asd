@@ -9,7 +9,7 @@
   :class "radiance:virtual-module"
   :name "chatlog"
   :version "0.0.1"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Frontend for Colleen's chatlog-pg module."
