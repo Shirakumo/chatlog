@@ -13,7 +13,7 @@
     <article id="chatlog">
       <header>
         <h1><c:splice lquery="(text page)"></c:splice> - <a @href="irclog/">IRC Chatlog</a></h1>
-        <a class="search-button" @href="irclog/search">Search</a>
+        <a class="search-button" @href='irclog/search?channel={0} page'>Search</a>
         <nav>
           <a @href='irclog/{0}?from={1} (path (uri (*request*))) (- from timestep)' class="button backward" title="Go backwards by twelve hours from the top."><i class="fa fa-backward" aria-hidden="true"></i></a>
           <time lquery="(time (unix-to-universal-time from) :fancy)"></time>
