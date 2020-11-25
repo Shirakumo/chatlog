@@ -233,7 +233,7 @@
 (define-api chatlog/channels () ()
   (api-output (channels)))
 
-(define-page view "irclog/^([a-zA-Z-]+)/(#*[a-zA-Z_\\-]+)$" (:uri-groups (server channel) :clip "view.ctml")
+(define-page view "irclog/^([a-zA-Z-]+)/(#*[a-zA-Z0-5_\\-]+)$" (:uri-groups (server channel) :clip "view.ctml")
   (setf (content-type *response*) "application/xhtml+xml")
   (let* ((search (post/get "search"))
          (by (post/get "by"))
