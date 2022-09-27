@@ -46,6 +46,9 @@
     (makunbound '*connections*)))
 
 (defun acquire-connection ()
+  (loop for i from 0 to 100
+        until (boundp '*connections*)
+        do (sleep 0.1))
   (bt:with-lock-held (*connections-lock*)
     (loop for connection = (pop *connections*)
           until connection
