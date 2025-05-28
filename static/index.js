@@ -30,7 +30,7 @@ $(function(){
     
     $(".text").each(function(){
         var text = $(this).text();
-        var urlregex = /([a-zA-Z]+):\/\/([A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=\%]*)/g;
+        var urlregex = /([a-zA-Z]+):\/\/([A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\*\+\,\;\=\%]*)/g;
         var previndex = 0;
         $(this).empty();
         while((match = urlregex.exec(text)) != null){
